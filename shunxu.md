@@ -1,9 +1,13 @@
-代码执行流程与异常处理详解
-这段代码模拟了 6 层函数调用栈，并在最顶层函数 (function6) 抛出异常，演示异常如何在不同层级的函数中被捕获或传播。以下是详细的执行流程分析：
+### **代码执行流程与异常处理详解**
 
-1. 正常执行流程（无异常抛出）
-如果 function6 不抛出异常，代码将按以下顺序执行：
+这段代码模拟了 **6 层函数调用栈**，并在最顶层函数 (`function6`) 抛出异常，演示异常如何在不同层级的函数中被捕获或传播。以下是详细的执行流程分析：
 
+---
+
+## **1. 正常执行流程（无异常抛出）**
+如果 `function6` **不抛出异常**，代码将按以下顺序执行：
+
+```
 [main] 开始
 [f2] 字符串: "Hello" + "World" = HelloWorld
 [f3] 计算: 1+2 = 3
@@ -15,18 +19,20 @@
 [f3] 完成
 [f2] 位运算: 1<<3 = 8
 [main] 正常结束
-关键点
-每个函数执行两个操作：
+```
 
-操作1：在调用下一层函数之前（如 function2 的字符串拼接）。
+### **关键点**
+- **每个函数执行两个操作**：
+  - **操作1**：在调用下一层函数之前（如 `function2` 的字符串拼接）。
+  - **操作2**：在调用下一层函数之后（如 `function2` 的位运算）。
+- **如果无异常**，所有操作都会按顺序执行。
 
-操作2：在调用下一层函数之后（如 function2 的位运算）。
+---
 
-如果无异常，所有操作都会按顺序执行。
+## **2. 异常抛出时的执行流程**
+当前代码中，`function6` 会 **抛出 `double` 异常**，因此执行流程会发生变化：
 
-2. 异常抛出时的执行流程
-当前代码中，function6 会 抛出 double 异常，因此执行流程会发生变化：
-
+```
 [main] 开始
 [f2] 字符串: "Hello" + "World" = HelloWorld
 [f3] 计算: 1+2 = 3
@@ -36,34 +42,30 @@
 [f3] 捕获double异常: 3.14159
 [f2] 位运算: 1<<3 = 8
 [main] 正常结束
-关键点
-function6 抛出 double 异常：
+```
 
-异常会 向上传播，寻找能处理 double 的 catch 块。
+### **关键点**
+1. **`function6` 抛出 `double` 异常**：
+   - 异常会 **向上传播**，寻找能处理 `double` 的 `catch` 块。
+2. **`function5` 和 `function4` 不处理 `double`**：
+   - 异常直接跳过它们的 `catch` 块，继续向上传递。
+3. **`function3` 捕获 `double` 异常**：
+   - `function3` 的 `catch (double e)` 会处理这个异常。
+   - **`function3` 的第二个操作（`[f3] 完成`）不会执行**，因为异常已经中断了正常流程。
+4. **异常处理后，程序继续执行**：
+   - `function2` 的第二个操作（位运算）仍然执行。
+   - `main` 最终正常结束，因为异常已被 `function3` 处理。
 
-function5 和 function4 不处理 double：
+---
 
-异常直接跳过它们的 catch 块，继续向上传递。
-
-function3 捕获 double 异常：
-
-function3 的 catch (double e) 会处理这个异常。
-
-function3 的第二个操作（[f3] 完成）不会执行，因为异常已经中断了正常流程。
-
-异常处理后，程序继续执行：
-
-function2 的第二个操作（位运算）仍然执行。
-
-main 最终正常结束，因为异常已被 function3 处理。
-
-3. 如果 function6 抛出 int 异常
-假设修改 function6，让它抛出 int 异常：
-
-cpp
+## **3. 如果 `function6` 抛出 `int` 异常**
+假设修改 `function6`，让它抛出 `int` 异常：
+```cpp
 throw 100; // 改为抛出 int
+```
 执行流程会变成：
 
+```
 [main] 开始
 [f2] 字符串: "Hello" + "World" = HelloWorld
 [f3] 计算: 1+2 = 3
@@ -74,32 +76,28 @@ throw 100; // 改为抛出 int
 [f3] 完成
 [f2] 位运算: 1<<3 = 8
 [main] 正常结束
-关键点
-function6 抛出 int 异常。
+```
 
-function5 不处理 int，异常向上传递。
+### **关键点**
+1. **`function6` 抛出 `int` 异常**。
+2. **`function5` 不处理 `int`**，异常向上传递。
+3. **`function4` 捕获 `int` 异常**：
+   - `function4` 的 `catch (int e)` 处理异常。
+   - `function4` 的第二个操作（`[f4] 完成`）不会执行。
+4. **`function3` 继续执行**：
+   - 因为 `function4` 已经处理了异常，`function3` 的 `catch` 块不会触发。
+   - `function3` 的第二个操作（`[f3] 完成`）仍然执行。
+5. **最终 `main` 正常结束**。
 
-function4 捕获 int 异常：
+---
 
-function4 的 catch (int e) 处理异常。
-
-function4 的第二个操作（[f4] 完成）不会执行。
-
-function3 继续执行：
-
-因为 function4 已经处理了异常，function3 的 catch 块不会触发。
-
-function3 的第二个操作（[f3] 完成）仍然执行。
-
-最终 main 正常结束。
-
-4. 如果异常未被捕获
-如果 function6 抛出 const char* 异常（无匹配的 catch）：
-
-cpp
+## **4. 如果异常未被捕获**
+如果 `function6` 抛出 `const char*` 异常（无匹配的 `catch`）：
+```cpp
 throw "Unknown error"; // 抛出 const char*
+```
 执行流程：
-
+```
 [main] 开始
 [f2] 字符串: "Hello" + "World" = HelloWorld
 [f3] 计算: 1+2 = 3
@@ -107,25 +105,26 @@ throw "Unknown error"; // 抛出 const char*
 [f5] 计算: 2*3 = 6
 [f6] 检查类型: double
 [main] 捕获double异常: Unknown error
-关键点
-由于没有 catch (const char*)，异常会一直传递到 main。
+```
 
-main 的 catch (...)（如果存在）会捕获它，否则程序崩溃。
+### **关键点**
+- 由于没有 `catch (const char*)`，异常会一直传递到 `main`。
+- `main` 的 `catch (...)`（如果存在）会捕获它，否则程序崩溃。
 
-总结
-情况	执行流程	关键行为
-正常执行	所有函数按顺序执行	每个函数的两个操作都会执行
-function6 抛出 double	function3 捕获	function4 和 function5 的后续操作被跳过
-function6 抛出 int	function4 捕获	function3 的后续操作仍然执行
-抛出未处理的异常	传递到 main	如果没有匹配的 catch，程序可能崩溃
+---
+
+## **总结**
+| 情况 | 执行流程 | 关键行为 |
+|------|---------|---------|
+| **正常执行** | 所有函数按顺序执行 | 每个函数的两个操作都会执行 |
+| **`function6` 抛出 `double`** | `function3` 捕获 | `function4` 和 `function5` 的后续操作被跳过 |
+| **`function6` 抛出 `int`** | `function4` 捕获 | `function3` 的后续操作仍然执行 |
+| **抛出未处理的异常** | 传递到 `main` | 如果没有匹配的 `catch`，程序可能崩溃 |
+
 这段代码完整演示了：
-
-函数调用栈（6 层调用）。
-
-异常传播机制（从 function6 向上传递）。
-
-不同 catch 块的处理逻辑（int 和 double 分别由不同函数处理）。
-
-异常对代码执行的影响（某些操作被跳过）。
+1. **函数调用栈**（6 层调用）。
+2. **异常传播机制**（从 `function6` 向上传递）。
+3. **不同 `catch` 块的处理逻辑**（`int` 和 `double` 分别由不同函数处理）。
+4. **异常对代码执行的影响**（某些操作被跳过）。
 
 这样的设计非常适合教学，能清晰展示 C++ 异常处理的核心机制。
